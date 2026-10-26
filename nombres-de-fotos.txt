@@ -1,0 +1,122 @@
+NOMBRES DE LAS FOTOS PARA LA PÁGINA DE PIETRA
+=============================================
+
+Cómo usar esta lista
+- Cada foto se guarda en la carpeta "fotos" con el nombre de la lista + un número y la terminación .jpg
+  Ejemplo: agata-verde-1.jpg (principal), agata-verde-2.jpg (varias opciones), agata-verde-3.jpg, agata-verde-4.jpg
+- Son hasta 4 fotos por piedra. La -1 es la que se ve en la lista y la primera al tocar la pieza.
+- Todo en minúsculas, sin tildes ni espacios, y siempre .jpg
+- Conviene achicar las fotos a unos 900 píxeles de ancho antes de subirlas.
+- [x] = ya tiene foto cargada en la carpeta.
+
+== CADENAS CON PIEDRA: Pequeña, Mediana y Grande comparten las mismas fotos ==
+[x] lapislazuli                       (Lapislázuli)
+[x] laja-de-agata                     (Laja de ágata)
+[ ] pirita-pulida                     (Pirita pulida)
+[x] agata-bandeada                    (Ágata Bandeada)
+[ ] agata-blanca                      (Ágata Blanca)
+[ ] agata-cornalina                   (Ágata Cornalina)
+[ ] agata-gris                        (Ágata Gris)
+[ ] agata-miel                        (Ágata Miel)
+[x] agata-verde                       (Ágata Verde)
+[ ] amatista                          (Amatista)
+[ ] amazonita                         (Amazonita)
+[ ] aventurina                        (Aventurina)
+[ ] aventurina-cafe                   (Aventurina Café)
+[ ] calcita                           (Calcita)
+[ ] celestina                         (Celestina)
+[ ] cianita                           (Cianita)
+[ ] cianita-azul                      (Cianita Azul)
+[x] citrino                           (Citrino)
+[ ] cornalina                         (Cornalina)
+[x] cuarzo                            (Cuarzo)
+[ ] cuarzo-ahumado                    (Cuarzo Ahumado)
+[ ] cuarzo-cherry                     (Cuarzo Cherry)
+[ ] cuarzo-hematoide                  (Cuarzo Hematoide)
+[x] cuarzo-rojo                       (Cuarzo Rojo)
+[ ] cuarzo-rosa                       (Cuarzo Rosa)
+[ ] cuarzo-salmon                     (Cuarzo Salmón)
+[ ] cuarzo-verde                      (Cuarzo Verde)
+[x] diamantina                        (Diamantina)
+[ ] fluorita-verde                    (Fluorita Verde)
+[ ] fucsita                           (Fucsita)
+[ ] hematita                          (Hematita)
+[ ] howlita                           (Howlita)
+[ ] jaspe-chocolate                   (Jaspe Chocolate)
+[ ] jaspe-paisaje                     (Jaspe Paisaje)
+[ ] labradorita                       (Labradorita)
+[x] lluvia-de-estrellas               (Lluvia de Estrellas)
+[ ] malaquita                         (Malaquita)
+[ ] matriz-de-amatista                (Matriz de Amatista)
+[ ] obsidiana                         (Obsidiana)
+[ ] ojo-de-buey                       (Ojo de Buey)
+[ ] ojo-de-tigre                      (Ojo de Tigre)
+[ ] onix-cielo                        (Ónix Cielo)
+[x] onix-inca                         (Ónix Inca)
+[x] onix-rojo                         (Ónix Rojo)
+[ ] opalina                           (Opalina)
+[ ] piedra-de-la-luna                 (Piedra de la Luna)
+[ ] pirita                            (Pirita)
+[x] rodocrosita                       (Rodocrosita)
+[ ] rosa-del-desierto                 (Rosa del Desierto)
+[ ] selenita                          (Selenita)
+[ ] selenita-melocoton                (Selenita Melocotón)
+[ ] selenita-miel                     (Selenita Miel)
+[x] sodalita                          (Sodalita)
+[ ] super-7                           (Super 7)
+[x] trinita                           (Trinita)
+[ ] turmalina-negra                   (Turmalina Negra)
+[ ] turmalina-sandia                  (Turmalina Sandía)
+[ ] turmalina-verde                   (Turmalina Verde)
+[ ] turquesa                          (Turquesa)
+[ ] unakita                           (Unakita)
+[ ] zoisita                           (Zoisita)
+
+== CADENA DE LUNA CON PIEDRA ==
+[x] luna-fucsita                      (Fucsita)
+[x] luna-lapislazuli                  (Lapislázuli)
+[x] luna-rodocrosita                  (Rodocrosita)
+[x] luna-turmalina-negra              (Turmalina Negra)
+[x] luna-cuarzo-cherry                (Cuarzo Cherry)
+[x] luna-opalina                      (Opalina)
+[x] luna-onix-negro                   (Ónix Negro)
+[x] luna-malaquita                    (Malaquita)
+[x] luna-pirita                       (Pirita)
+
+== CADENAS CON PIEDRA, tamaño PERLA (8 mm) ==
+[x] perla-cuarzo-rosa                 (Cuarzo Rosa)
+[x] perla-cuarzo-cherry               (Cuarzo Cherry)
+[x] perla-ojo-de-tigre                (Ojo de Tigre)
+[x] perla-ojo-de-buey                 (Ojo de Buey)
+[ ] perla-ojo-de-halcon               (Ojo de Halcón)
+[x] perla-opalina                     (Opalina)
+[x] perla-onix-negro                  (Ónix Negro)
+[x] perla-agata-naranja               (Ágata Naranja)
+[x] perla-malaquita                   (Malaquita)
+[x] perla-amatista                    (Amatista)
+
+== CADENAS CON PIEDRA, tamaño CORDÓN ==
+[ ] cordon-lapislazuli                (Lapislázuli)
+[ ] cordon-sodalita                   (Sodalita)
+[ ] cordon-hematita                   (Hematita)
+[ ] cordon-agata-naranja              (Ágata Naranja)
+[ ] cordon-agata-cebra                (Ágata Cebra)
+[ ] cordon-lluvia-de-estrellas        (Lluvia de Estrellas)
+[ ] cordon-amatista                   (Amatista)
+[ ] cordon-howlita                    (Howlita)
+[ ] cordon-turquesa                   (Turquesa)
+
+== PIEDRAS SUELTAS ==
+[x] suelta-turmalina-negra            (Turmalina Negra)
+[x] suelta-cuarzo-cristal             (Cuarzo Cristal)
+[x] suelta-cuarzo-verde               (Cuarzo Verde)
+[x] suelta-selenita                   (Selenita)
+[x] suelta-fluorita-verde             (Fluorita Verde)
+
+== CADENAS CON DIJES (acero y fundición) ==
+[ ] cadena-cadena-con-dije-de-corazon (Cadena con dije de corazón)
+[ ] cadena-cadena-con-dije-de-luna    (Cadena con dije de luna)
+[ ] cadena-cadena-con-dije-de-cruz    (Cadena con dije de cruz)
+[ ] cadena-cadena-con-dije-de-ancla   (Cadena con dije de ancla)
+[ ] cadena-cadena-con-dije-de-mano    (Cadena con dije de mano)
+

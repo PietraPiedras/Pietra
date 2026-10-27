@@ -155,7 +155,7 @@ var SUELTAS=[["Turmalina Negra",15000,"Turmalina Negra",IMG_S[0]],["Cuarzo Crist
 SUELTAS.forEach(function(a){var c="#888888";STONES.forEach(function(s){if(s[0]===(a[2]||a[0]))c=s[1];});P.push({n:a[0],c:"Piedras",s:"Suelta",p:a[1],g:[lift(c),shade(c)],img:a[3],info:a[2]});});
 var LUNA=[["Fucsita"],["Lapislázuli"],["Rodocrosita"],["Turmalina Negra"],["Cuarzo Cherry"],["Opalina"],["Ónix Negro","#3a3a40"],["Malaquita"],["Pirita"]];
 LUNA.forEach(function(a){var c=a[1];if(!c){STONES.forEach(function(s){if(s[0]===a[0])c=s[1];});}P.push({n:a[0],c:"Luna",s:"Luna de acero",p:PRICE.Luna,g:[lift(c),shade(c)]});});
-["Virgen rezando con rosario","Colibrí","Margarita","Torre Eiffel","Serpiente","Herradura","Astronauta en la luna","Valija","Luna con estrella","Mariposa"].forEach(function(n){P.push({n:n,k:(n==="Virgen rezando con rosario"?"ovalo-con-cruz":null),c:"Cadenas con dijes",s:"Acero",p:7000,g:["#9a9aa4","#2a2a30"]});});
+["Óvalo con cruz","Colibrí","Margarita","Torre Eiffel","Serpiente","Herradura","Astronauta en la luna","Valija","Luna con estrella","Mariposa"].forEach(function(n){P.push({n:n,c:"Cadenas con dijes",s:"Acero",p:7000,g:["#9a9aa4","#2a2a30"]});});
 var AROS=[["Malaquita"],["Jaspe Rojo","#a8432c"],["Amatista"]];
 AROS.forEach(function(a){var c=a[1];if(!c){STONES.forEach(function(s){if(s[0]===a[0])c=s[1];});}P.push({n:a[0],c:"Aros",s:"Con perla",p:PRICE.Aros,g:[lift(c),shade(c)]});});
 function imgFallback(el,i){var x=P[i];if(x&&x.s==="Cordón"&&!el.dataset.f){el.dataset.f=1;el.src="fotos/cordon-referencia-1.jpg";}else{el.remove();}}
@@ -163,7 +163,7 @@ var INFO={};STONES.forEach(function(s){INFO[s[0]]=[s[2],s[3]];});
 P.forEach(function(x){var i=INFO[x.info||x.n];if(i){x.z=i[0];x.e=i[1];}});
 var cat = "Dijes", size = "Menu", cart = {}, sign = "", SIGNOS = [["♈","Aries"],["♉","Tauro"],["♊","Géminis"],["♋","Cáncer"],["♌","Leo"],["♍","Virgo"],["♎","Libra"],["♏","Escorpio"],["♐","Sagitario"],["♑","Capricornio"],["♒","Acuario"],["♓","Piscis"]];
 function slug(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");}
-function photoKey(x){var pre=x.c==="Aros"?"aros-":x.c==="Luna"?"luna-":x.s==="Perla"?"perla-":x.s==="Cordón"?"cordon-":x.c==="Piedras"?"suelta-":x.c==="Cadenas con dijes"?"cadena-":"";return pre+(x.k||slug(x.n));}
+function photoKey(x){var pre=x.c==="Aros"?"aros-":x.c==="Luna"?"luna-":x.s==="Perla"?"perla-":x.s==="Cordón"?"cordon-":x.c==="Piedras"?"suelta-":x.c==="Cadenas con dijes"?"cadena-":"";return pre+slug(x.n);}
 var IMGS={};
 function embedded(x){var a=(x.img?[x.img]:[]).concat(IMGS[photoKey(x)]||[]);if(!a.length&&x.s==="Cordón")a=IMGS["cordon-referencia"]||[];return a;}
 var dtKey="";

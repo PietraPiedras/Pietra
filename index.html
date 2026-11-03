@@ -84,6 +84,14 @@ nav+.cartbtn{margin-left:0}
 .box{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface)}
 .box h3{margin:0 0 6px;font-size:1rem}
 .box p{margin:0;color:var(--muted);font-size:.9rem}
+.mq{overflow:hidden;margin-bottom:12px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+.mq-track{display:flex;gap:12px;width:max-content;padding-right:12px;animation:mq 70s linear infinite}
+.mq.rev .mq-track{animation-direction:reverse}
+.mq:hover .mq-track{animation-play-state:paused}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mq-i{flex:none;width:clamp(130px,36vw,210px);aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;cursor:pointer;background:var(--surface);border:1px solid var(--line)}
+.mq-i img{width:100%;height:100%;object-fit:cover;display:block}
+@media (prefers-reduced-motion:reduce){.mq-track{animation:none}.mq{overflow-x:auto}}
 .back{display:inline-block;color:var(--muted);margin-bottom:12px;font-size:.9rem;cursor:pointer}
 .hero{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;max-height:340px;width:100%;background:var(--surface);margin-bottom:16px}
 .slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity .9s;cursor:pointer}
@@ -130,7 +138,8 @@ footer{border-top:1px solid var(--line);padding:20px 16px;text-align:center;colo
 
 <main id="top">
   <section id="home">
-    <div class="hero" id="hero"><div id="slides"></div><div class="dots" id="dots"></div></div>
+    <div class="mq" id="mq1"></div>
+    <div class="mq" id="mq2" style="margin-bottom:18px"></div>
     <h1>Piedras cortadas y pulidas a mano</h1>
     <p class="sub">Cadenas con piedra, lunas, pulseras, anillos y aros. Todas las cadenas son de acero quirúrgico de 55 cm.</p>
     <div class="cta"><button class="c1" onclick="go('catalog')">Ver el catálogo</button><a class="c2" id="wa3" href="#">Escribinos por WhatsApp</a></div>
@@ -293,14 +302,14 @@ function showSlide(i){var ss=document.querySelectorAll("#slides .slide"),dd=docu
   for(var k=0;k<ss.length;k++){ss[k].className="slide"+(k===i?" on":"");if(dd[k])dd[k].className="dot"+(k===i?" on":"");}}
 function nextSlide(){var ss=document.querySelectorAll("#slides .slide");for(var t=1;t<=ss.length;t++){var j=(si+t)%ss.length;if(!ss[j].getAttribute("data-bad")){showSlide(j);return;}}}
 function buildHome(){
-  var sl=document.getElementById("slides"),dt=document.getElementById("dots");sl.innerHTML="";dt.innerHTML="";
-  SLIDES.forEach(function(s,i){var d=document.createElement("div");d.className="slide"+(i===0?" on":"");
-    d.innerHTML='<img alt="'+s[1]+'" src="'+slideSrc(s[0])+'" onerror="this.parentNode.setAttribute(\'data-bad\',1)"><span class="cap">'+s[1]+'</span>';
-    d.onclick=function(){go("catalog",null,s[2]);};sl.appendChild(d);
-    var b=document.createElement("button");b.className="dot"+(i===0?" on":"");b.setAttribute("aria-label","Foto "+(i+1));b.onclick=function(){showSlide(i);};dt.appendChild(b);});
+  var R1=[["agata-verde-1","Dijes"],["cadena-colibri-1","Cadenas con dijes"],["luna-malaquita-1","Luna"],["aros-amatista-1","Aros"],["diamantina-1","Dijes"],["anillo-estampado-aries-1","Anillos"],["perla-ojo-de-tigre-1","Dijes"],["citrino-1","Dijes"]];
+  var R2=[["sodalita-1","Dijes"],["luna-opalina-1","Luna"],["cadena-mariposa-1","Cadenas con dijes"],["rosa-del-desierto-1","Dijes"],["anillo-lapislazuli-1","Anillos"],["amazonita-1","Dijes"],["aros-malaquita-1","Aros"],["labradorita-1","Dijes"],["unakita-1","Dijes"]];
+  function fill(id,rows,rev){var el=document.getElementById(id);el.className="mq"+(rev?" rev":"");
+    var one=rows.map(function(r){return '<div class="mq-i" onclick="go(\'catalog\',null,\''+r[1]+'\')"><img alt="" loading="lazy" src="'+slideSrc(r[0])+'" onerror="this.parentNode.remove()"></div>';}).join("");
+    el.innerHTML='<div class="mq-track">'+one+one+'</div>';}
+  fill("mq1",R1,false);fill("mq2",R2,true);
   document.getElementById("ctiles").innerHTML=CATS.map(function(c){var k=TILEIMG[c];
     return '<button class="ctile" onclick="go(\'catalog\',null,\''+c+'\')"><span class="cph" style="background:linear-gradient(135deg,#2a2a2d,#161618)">'+(k?'<img alt="" src="'+slideSrc(k)+'" onerror="this.remove()">':'')+'</span><b>'+(CATLABEL[c]||c)+'</b><small>'+(c==="Pulseras"?"Muy pronto":"Ver piezas")+'</small></button>';}).join("");
-  if(stimer)clearInterval(stimer);stimer=setInterval(nextSlide,4000);
 }
 function go(v,anchor,c){view=v;if(c){cat=c;size=(c==="Dijes"?"Menu":"Todos");sign="";}
   document.getElementById("home").style.display=v==="home"?"block":"none";

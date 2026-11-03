@@ -205,7 +205,7 @@ function imgFallback(el,i){var x=P[i];if(x&&x.s==="Cordón"&&!el.dataset.f){el.d
 var RINGS=["Todos","Con piedra","Estampados","Lisos","De alambre"];
 PRICE["Con piedra"]=5000;PRICE["Estampados"]=5000;PRICE["Lisos"]=4000;PRICE["De alambre"]=3000;
 var GA=["#c4c8d0","#2c2e33"],GB=["#d4ac52","#3a2c0c"];
-[["Lapislázuli","lapislazuli"],["Amatista","amatista"],["Cuarzo Cristal","cuarzo-cristal","Cuarzo"],["Cuarzo Rosa","cuarzo-rosa"]].forEach(function(a){var c="#888888";STONES.forEach(function(s){if(s[0]===(a[2]||a[0]))c=s[1];});P.push({n:a[0],k:a[1],info:a[2],c:"Anillos",s:"Con piedra",p:PRICE["Con piedra"],g:[lift(c),shade(c)]});});
+[["Lapislázuli","lapislazuli"],["Amatista","amatista"],["Cuarzo Cristal","cuarzo-cristal","Cuarzo"],["Cuarzo Rosa","cuarzo-rosa"],["Obsidiana","obsidiana"],["Cuarzo Verde","cuarzo-verde"],["Rodocrosita","rodocrosita"],["Zoisita","zoisita"],["Mix de piedras","mix-de-piedras"]].forEach(function(a){var c="#888888";STONES.forEach(function(s){if(s[0]===(a[2]||a[0]))c=s[1];});P.push({n:a[0],k:a[1],info:a[2],c:"Anillos",s:"Con piedra",p:PRICE["Con piedra"],g:[lift(c),shade(c)]});});
 ["Aries","Tauro","Géminis","Cáncer","Leo","Virgo","Libra","Escorpio","Sagitario","Capricornio","Acuario","Piscis"].forEach(function(sg){["Alpaca","Bronce"].forEach(function(m){P.push({n:sg+" · "+m,k:"estampado-"+slug(sg),z:sg,c:"Anillos",s:"Estampados",p:PRICE["Estampados"],g:m==="Bronce"?GB:GA});});});
 ["Alpaca","Bronce"].forEach(function(m){P.push({n:"Corazón · "+m,k:"estampado-corazon",c:"Anillos",s:"Estampados",p:PRICE["Estampados"],g:m==="Bronce"?GB:GA});});
 ["Alpaca","Bronce"].forEach(function(m){P.push({n:"Liso · "+m,k:"liso-"+slug(m),c:"Anillos",s:"Lisos",p:PRICE["Lisos"],g:m==="Bronce"?GB:GA});});

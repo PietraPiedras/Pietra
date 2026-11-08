@@ -57,7 +57,7 @@ nav button.on{color:var(--accent);font-weight:700}
 <body>
 <header>
   <h1>Pietra · Control de ferias</h1>
-  <div class="fair"><span>Feria:</span><b id="fairName">—</b><button class="btn" style="padding:4px 10px;margin-left:auto" onclick="newFair()">Cambiar / nueva</button></div>
+  <div class="fair"><span>Feria:</span><b id="fairName">—</b><button id="sync" class="btn" style="padding:4px 10px;margin-left:auto;font-size:.8rem" onclick="flush(true)">☁</button><button class="btn" style="padding:4px 10px" onclick="newFair()">Cambiar / nueva</button></div>
 </header>
 <main>
   <!-- VENDER -->
@@ -104,7 +104,7 @@ var ITEMS=DATA.items.map(function(a,i){return {k:a[1]+"|"+a[0]+"|"+a[2],n:a[0],c
 var LAB=DATA.labels,CATS=DATA.cats.filter(function(c){return ITEMS.some(function(x){return x.c===c;});});
 var PAYS=["Efectivo","Transferencia","QR","Tarjeta"];
 var KEY="pietra_ferias_v1";
-var S={fairs:[],sales:[],printed:{},cardCats:{"Dijes":true,"Luna":true,"Aros":true,"Piedras":true,"Anillos":false,"Cadenas con dijes":false,"Pulseras":false},fair:null,pay:"Efectivo"};
+var S={fairs:[],sales:[],printed:{},cardCats:{"Dijes":true,"Luna":true,"Aros":true,"Piedras":true,"Anillos":false,"Cadenas con dijes":false,"Pulseras":false},fair:null,pay:"Efectivo",sent:{}};
 var cat="Dijes",size="Todos",lastSale=null;
 function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);for(var k in o)S[k]=o[k];}}catch(e){}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast("No pude guardar: revisá el almacenamiento del navegador",true);}}
@@ -129,14 +129,14 @@ function tab(t){["vender","resumen","cartones","datos"].forEach(function(x){docu
   if(t==="cartones")cartones();if(t==="datos")datos();window.scrollTo(0,0);}
 function cardOf(it){if(!S.cardCats[it.c])return "";return it.c==="Aros"?"Aros (cartón general)":it.n;}
 function sell(it,price){var s={id:"s"+Date.now()+Math.random().toString(36).slice(2,5),t:Date.now(),fair:S.fair,k:it.k,n:it.n,c:it.c,s:it.s,price:price,pay:S.pay,card:cardOf(it)};
-  S.sales.push(s);lastSale=s.id;save();toast("Vendido: "+it.n+(it.s&&it.c==="Dijes"?" ("+it.s+")":"")+" · "+money(price));draw();}
+  S.sales.push(s);lastSale=s.id;save();setTimeout(flush,6500);toast("Vendido: "+it.n+(it.s&&it.c==="Dijes"?" ("+it.s+")":"")+" · "+money(price));draw();}
 function venderItem(i){var it=ITEMS[i],p=it.p;if(!p){p=parseFloat(String(prompt("Precio de "+it.n,"")||"").replace(",","."));if(!(p>0))return;}sell(it,p);}
 function deshacer(){if(!lastSale)return;S.sales=S.sales.filter(function(x){return x.id!==lastSale;});lastSale=null;save();hideToast();draw();}
 var tt=null;function toast(m,err){document.getElementById("toastTx").textContent=m;var t=document.getElementById("toast");t.classList.add("show");document.getElementById("toastBtn").style.display=err?"none":"";clearTimeout(tt);tt=setTimeout(hideToast,5000);}
 function hideToast(){document.getElementById("toast").classList.remove("show");}
 function otro(){var n=prompt("¿Qué vendiste?");if(!n)return;var p=parseFloat(String(prompt("Precio","")||"").replace(",","."));if(!p||p<0)return;
   sell({k:"Otro|"+n+"|",n:n,c:"Otro",s:"",p:p},p);}
-function draw(){ensureFair();
+function draw(){ensureFair();syncUI();
   document.getElementById("pay").innerHTML=PAYS.map(function(p){return '<button class="chip'+(S.pay===p?" on":"")+'" onclick="S.pay=\''+p+'\';save();draw()">'+p+'</button>';}).join("");
   document.getElementById("cats").innerHTML=CATS.map(function(c){return '<button class="chip'+(c===cat?" on":"")+'" onclick="cat=\''+c+'\';size=\'Todos\';draw()">'+esc(lab(c))+'</button>';}).join("");
   var q=norm(document.getElementById("q").value.trim());
@@ -185,7 +185,27 @@ function bajarCSV(){var rows=[["fecha","hora","feria","pieza","tamaño","tipo","
 function bajarBackup(){bajar("copia-ferias-pietra-"+today()+".json",JSON.stringify(S),"application/json");}
 function restaurar(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);if(!o.sales)throw 0;if(!confirm("Esto reemplaza los datos actuales. ¿Seguir?"))return;S=o;save();location.reload();}catch(e){alert("El archivo no es una copia válida.");}};r.readAsText(f);}
 function borrarTodo(){if(confirm("¿Borrar TODAS las ventas y ferias de este celular?")&&confirm("Última confirmación: no se puede deshacer.")){try{localStorage.removeItem(KEY);}catch(e){}location.reload();}}
-load();draw();
+
+var SHEET_URL="https://script.google.com/macros/s/AKfycbywpMdS4Fgb6aPSSPY8wLxFv92UaE2RqgL7nfPVmXdirhRAvgszuNu_b3Nb-suUM6J39A/exec";
+var syncing=false;
+function payload(s){var d=new Date(s.t),f=fairObj(s.fair);return {fecha:dayOf(s.t),hora:("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2),feria:f?f.name:"",pieza:s.n,"tamaño":s.s,tipo:lab(s.c),precio:s.price,pago:s.pay,"cartón":s.card,id:s.id};}
+function sinEnviar(){return S.sales.filter(function(s){return !S.sent[s.id];});}
+function syncUI(){var el=document.getElementById("sync");if(!el)return;var n=sinEnviar().length;el.textContent=n?"☁ "+n+" sin enviar":"☁ al día";el.style.color=n?"var(--accent)":"var(--ok)";}
+function flush(manual){
+  if(syncing)return;
+  var now=Date.now(),p=sinEnviar().filter(function(s){return manual===true||now-s.t>6000;});
+  if(!p.length){syncUI();if(manual===true)toast("Todo enviado a la hoja",true);return;}
+  if(navigator.onLine===false){syncUI();if(manual===true)toast("Sin conexión: se envía solo cuando vuelva",true);return;}
+  syncing=true;var batch=p.slice(0,50);
+  fetch(SHEET_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(batch.map(payload))})
+    .then(function(r){return r.json();})
+    .then(function(j){if(!j||!j.ok)throw 0;batch.forEach(function(s){S.sent[s.id]=1;});save();syncing=false;syncUI();if(manual===true&&!sinEnviar().length)toast("Enviado a la hoja ✔",true);if(sinEnviar().length)flush(manual);})
+    .catch(function(){syncing=false;syncUI();if(manual===true)toast("No se pudo enviar. Se reintenta solo.",true);});
+}
+window.addEventListener("online",function(){flush();});
+document.addEventListener("visibilitychange",function(){if(!document.hidden)flush();});
+setInterval(flush,30000);
+load();draw();setTimeout(flush,1500);
 </script>
 </body>
 </html>

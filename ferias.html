@@ -88,6 +88,7 @@ nav button.on{color:var(--accent);font-weight:700}
     <div class="card"><h3>Cartones a reimprimir</h3><p class="muted">Cuenta cada pieza vendida que lleva cartón, desde la última vez que marcaste que reimprimiste.</p><div id="cartList"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn pri" onclick="copiarCartones()">Copiar lista</button><button class="btn" onclick="marcarTodo()">Ya reimprimí todo</button></div></div>
   </section>
+  <section id="v-costos" class="hide"><div id="costosBody"></div></section>
   <!-- DATOS -->
   <section id="v-datos" class="hide">
     <div class="card"><h3>Qué lleva cartón</h3><p class="muted">Tildá los tipos de pieza que llevan cartón. Cada piedra tiene su propio cartón; los aros usan uno general.</p><div id="cardCats"></div></div>
@@ -104,6 +105,7 @@ nav button.on{color:var(--accent);font-weight:700}
   <button id="n-vender" class="on" onclick="tab('vender')">Vender</button>
   <button id="n-resumen" onclick="tab('resumen')">Resumen</button>
   <button id="n-cartones" onclick="tab('cartones')">Cartones</button>
+  <button id="n-costos" onclick="tab('costos')">Costos</button>
   <button id="n-datos" onclick="tab('datos')">Datos</button>
 </nav>
 <script>
@@ -129,7 +131,7 @@ var ITEMS=DATA.items.map(function(a,i){return {k:a[1]+"|"+a[0]+"|"+a[2],n:a[0],c
 var LAB=DATA.labels,CATS=DATA.cats.filter(function(c){return ITEMS.some(function(x){return x.c===c;});});
 var PAYS=["Efectivo","Transferencia","QR","Tarjeta"];
 var KEY="pietra_ferias_v1";
-var S={fairs:[],sales:[],printed:{},cardCats:{"Dijes":true,"Luna":true,"Aros":true,"Piedras":true,"Anillos":false,"Cadenas con dijes":false,"Pulseras":false},fair:null,pay:"Efectivo"};
+var S={fairs:[],sales:[],printed:{},costs:{fix:{},rec:{},stone:{}},cardCats:{"Dijes":true,"Luna":true,"Aros":true,"Piedras":true,"Anillos":false,"Cadenas con dijes":false,"Pulseras":false},fair:null,pay:"Efectivo"};
 var cat="Dijes",size="Todos",lastSale=null;
 /* ===== NUBE (Firebase) ===== */
 var LKEY="pietra_ferias_local_v2";
@@ -145,12 +147,12 @@ function save(){try{localStorage.setItem(LKEY,JSON.stringify({fair:S.fair,pay:S.
 function sync(){
   if(!db||!ready.f||!ready.v||!ready.c)return;
   var ops=[],ids={};
-  S.fairs.forEach(function(f){ids[f.id]=1;var o=plain({id:f.id,name:f.name,date:f.date}),j=stable(o);if(synced.fairs[f.id]!==j){synced.fairs[f.id]=j;ops.push(["set","ferias",f.id,o]);}});
+  S.fairs.forEach(function(f){ids[f.id]=1;var o=plain({id:f.id,name:f.name,date:f.date,g:f.g}),j=stable(o);if(synced.fairs[f.id]!==j){synced.fairs[f.id]=j;ops.push(["set","ferias",f.id,o]);}});
   Object.keys(synced.fairs).forEach(function(id){if(!ids[id]){delete synced.fairs[id];ops.push(["del","ferias",id]);}});
   ids={};
   S.sales.forEach(function(s){ids[s.id]=1;var o=plain(s),j=stable(o);if(synced.sales[s.id]!==j){synced.sales[s.id]=j;ops.push(["set","ventas",s.id,o]);}});
   Object.keys(synced.sales).forEach(function(id){if(!ids[id]){delete synced.sales[id];ops.push(["del","ventas",id]);}});
-  var c=plain({printed:S.printed||{},cardCats:S.cardCats||{}}),cj=stable(c);
+  var c=plain(cfgObj()),cj=stable(c);
   if(cj!==synced.cfg){synced.cfg=cj;ops.push(["set","config","estado",c]);}
   if(!ops.length)return;
   for(var i=0;i<ops.length;i+=400){(function(part){
@@ -167,7 +169,7 @@ function startSync(){
   var err=function(e){console.error(e);setSync("⚠ Sin acceso a la nube","var(--bad)");showGate("No pude leer la base de datos ("+(e.code||"error")+"). Revisá las reglas de Firestore y que estés con el usuario correcto.",true);};
   unsubs.push(db.collection("ferias").onSnapshot(function(q){
     var a=[],sy={};
-    q.forEach(function(d){var o=d.data(),f={id:d.id,name:o.name||"",date:o.date||""};a.push(f);sy[d.id]=stable(f);});
+    q.forEach(function(d){var o=d.data(),f={id:d.id,name:o.name||"",date:o.date||""};if(o.g)f.g=o.g;a.push(f);sy[d.id]=stable(f);});
     a.sort(function(x,y){return (parseInt(x.id.slice(1),10)||0)-(parseInt(y.id.slice(1),10)||0);});
     S.fairs=a;synced.fairs=sy;snap("f");},err));
   unsubs.push(db.collection("ventas").onSnapshot(function(q){
@@ -176,7 +178,7 @@ function startSync(){
     a.sort(function(x,y){return x.t-y.t;});
     S.sales=a;synced.sales=sy;snap("v");},err));
   unsubs.push(db.collection("config").doc("estado").onSnapshot(function(d){
-    if(d.exists){var o=d.data();S.printed=o.printed||{};if(o.cardCats)for(var k in o.cardCats)S.cardCats[k]=o.cardCats[k];synced.cfg=stable(plain({printed:S.printed,cardCats:S.cardCats}));}
+    if(d.exists){var o=d.data();S.printed=o.printed||{};if(o.cardCats)for(var k in o.cardCats)S.cardCats[k]=o.cardCats[k];S.costs={fix:o.fix||{},rec:o.rec||{},stone:{}};(o.stone||[]).forEach(function(x){S.costs.stone[x.k]=x.c;});synced.cfg=stable(plain(cfgObj()));}
     snap("c");},err));
 }
 function stopSync(){unsubs.forEach(function(u){u();});unsubs=[];ready={f:false,v:false,c:false};started=false;}
@@ -205,9 +207,9 @@ function iniciar(){
 }
 function arrancar(){hideGate();updStatus();migrarViejos(false);draw();}
 function rerender(){
-  var t=["vender","resumen","cartones","datos"].filter(function(x){return !document.getElementById("v-"+x).classList.contains("hide");})[0]||"vender";
+  var t=["vender","resumen","cartones","costos","datos"].filter(function(x){return !document.getElementById("v-"+x).classList.contains("hide");})[0]||"vender";
   var fo=fairObj(S.fair);if(fo)document.getElementById("fairName").textContent=fo.name;
-  if(t==="vender")draw();else if(t==="resumen")resumen();else if(t==="cartones")cartones();else datos();
+  if(t==="vender")draw();else if(t==="resumen")resumen();else if(t==="cartones")cartones();else if(t==="costos")costos();else datos();
 }
 /* Sube a la nube lo que había guardado en este celular con la versión anterior de la página */
 function migrarViejos(manual){
@@ -241,11 +243,11 @@ function newFair(first){
   if(!f){f={id:"f"+Date.now(),name:name,date:today()};S.fairs.push(f);}
   S.fair=f.id;save();document.getElementById("fairName").textContent=f.name;draw();
 }
-function tab(t){["vender","resumen","cartones","datos"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("hide",x!==t);document.getElementById("n-"+x).classList.toggle("on",x===t);});
+function tab(t){["vender","resumen","cartones","costos","datos"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("hide",x!==t);document.getElementById("n-"+x).classList.toggle("on",x===t);});
   if(t==="resumen"){var d=document.getElementById("rdate"),d2=document.getElementById("rdate2");if(!d.value)d.value=today();if(!d2.value)d2.value=d.value;fillFairSel();resumen();}
-  if(t==="cartones")cartones();if(t==="datos")datos();window.scrollTo(0,0);}
+  if(t==="cartones")cartones();if(t==="costos")costos();if(t==="datos")datos();window.scrollTo(0,0);}
 function cardOf(it){if(!S.cardCats[it.c])return "";return it.c==="Aros"?"Aros (cartón general)":it.n;}
-function sell(it,price){var s={id:"s"+Date.now()+Math.random().toString(36).slice(2,5),t:Date.now(),fair:S.fair,k:it.k,n:it.n,c:it.c,s:it.s,price:price,pay:S.pay,card:cardOf(it)};
+function sell(it,price){var s={id:"s"+Date.now()+Math.random().toString(36).slice(2,5),t:Date.now(),fair:S.fair,k:it.k,n:it.n,c:it.c,s:it.s,price:price,pay:S.pay,card:cardOf(it)};var cc0=costoItem(it);if(cc0!=null)s.cost=cc0;
   S.sales.push(s);lastSale=s.id;save();toast("Vendido: "+it.n+(it.s&&it.c==="Dijes"?" ("+it.s+")":"")+" · "+money(price));draw();}
 function venderItem(i){var it=ITEMS[i],p=it.p;if(!p){p=parseFloat(String(prompt("Precio de "+it.n,"")||"").replace(",","."));if(!(p>0))return;}sell(it,p);}
 function deshacer(){if(!lastSale)return;S.sales=S.sales.filter(function(x){return x.id!==lastSale;});lastSale=null;save();hideToast();draw();}
@@ -277,6 +279,8 @@ function resumen(){fillFairSel();var v=daySales(),tot=v.reduce(function(a,b){ret
   if(!v.length){document.getElementById("rbody").innerHTML='<p class="muted">No hay ventas en esas fechas.</p>';return;}
   h+='<div class="kpis"><div class="kpi"><b>'+money(tot)+'</b><span>Total vendido</span></div><div class="kpi"><b>'+v.length+'</b><span>Piezas</span></div><div class="kpi"><b>'+money(tot/v.length)+'</b><span>Promedio</span></div></div>';
   var dg=groupBy(v,function(s){return dayOf(s.t);}),dk=Object.keys(dg).sort();
+  var cs=0,tk=0,sc=0,gt=0,seen={};v.forEach(function(x){var c=costoVenta(x);if(c==null)sc++;else{cs+=c;tk+=x.price;}if(!seen[x.fair]){seen[x.fair]=1;var f=fairObj(x.fair);if(f&&f.g)gt+=(f.g.comb||0)+(f.g.otros||0);}});
+  if(cs>0||gt>0){var gb=tk-cs;h+='<div class="card"><h3>Ganancia</h3><div class="row"><span>Costo de las piezas</span><span class="r">'+money(cs)+'</span></div><div class="row"><span>Ganancia de las piezas'+(tk?' · '+Math.round(gb/tk*100)+'%':'')+'</span><span class="r">'+money(gb)+'</span></div>'+(gt?'<div class="row"><span>Gastos de feria (combustible, otros)</span><span class="r">−'+money(gt)+'</span></div><div class="row"><b>Ganancia neta</b><span class="r"><b>'+money(gb-gt)+'</b></span></div>':'')+(sc?'<p class="muted">'+sc+' piezas sin costo cargado no cuentan en la ganancia.</p>':'')+'</div>';}else h+='<div class="card"><p class="muted">Cargá los costos en la pestaña Costos para ver la ganancia.</p></div>';
   if(dk.length>1)h+='<div class="card"><h3>Por día</h3>'+dk.map(function(k){var a=dg[k];return '<div class="row"><span>'+fmtD(k)+' · '+a.length+'</span><span class="r">'+money(a.reduce(function(x,y){return x+y.price;},0))+'</span></div>';}).join("")+'</div>';
   var fg=groupBy(v,function(s){var f=fairObj(s.fair);return f?f.name:"(sin nombre)";});
   if(Object.keys(fg).length>1)h+='<div class="card"><h3>Por feria</h3>'+sumBy(fg).map(function(r){return '<div class="row"><span>'+esc(r.k)+' · '+r.n+'</span><span class="r">'+money(r.t)+'</span></div>';}).join("")+'</div>';
@@ -306,13 +310,34 @@ function marcar(k){var c=0;S.sales.forEach(function(s){if(s.card===k)c++;});S.pr
 function marcarTodo(){if(!confirm("¿Marcar todos los cartones como reimpresos?"))return;var c={};S.sales.forEach(function(s){if(s.card)c[s.card]=(c[s.card]||0)+1;});S.printed=c;save();cartones();}
 function copiarCartones(){var p=pendientes();copiar(p.length?"Cartones a reimprimir:\n"+p.map(function(r){return "- "+r[0]+" x"+r[1];}).join("\n"):"No hay cartones pendientes.");}
 function datos(){document.getElementById("cardCats").innerHTML=DATA.cats.map(function(c){return '<label class="row" style="cursor:pointer"><span>'+esc(lab(c))+'</span><input type="checkbox" '+(S.cardCats[c]?"checked":"")+' onchange="S.cardCats[\''+c+'\']=this.checked;save()"></label>';}).join("");
-  document.getElementById("fairList").innerHTML=S.fairs.length?S.fairs.slice().reverse().map(function(f){var v=S.sales.filter(function(s){return s.fair===f.id;});return '<div class="row"><span>'+esc(f.name)+'<br><span class="muted">'+f.date+'</span></span><span class="r">'+v.length+' piezas<br>'+money(v.reduce(function(a,b){return a+b.price;},0))+'</span></div>';}).join(""):'<p class="muted">Todavía no hay ferias.</p>';}
+  document.getElementById("fairList").innerHTML=S.fairs.length?S.fairs.slice().reverse().map(function(f){var v=S.sales.filter(function(s){return s.fair===f.id;});return '<div class="row"><span>'+esc(f.name)+'<br><span class="muted">'+f.date+(f.g?" · gastos "+money((f.g.comb||0)+(f.g.otros||0)):"")+'</span><br><button class="btn" style="padding:3px 10px;margin-top:4px" onclick="gastos(\''+f.id+'\')">Gastos</button></span><span class="r">'+v.length+' piezas<br>'+money(v.reduce(function(a,b){return a+b.price;},0))+'</span></div>';}).join(""):'<p class="muted">Todavía no hay ferias.</p>';}
 function bajar(nombre,txt,tipo){var b=new Blob([txt],{type:tipo}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=nombre;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);}
 function bajarCSV(){var rows=[["fecha","hora","feria","pieza","tamaño","tipo","precio","pago","cartón"]];S.sales.forEach(function(s){var d=new Date(s.t),f=fairObj(s.fair);rows.push([dayOf(s.t),("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2),f?f.name:"",s.n,s.s,lab(s.c),s.price,s.pay,s.card]);});
   bajar("ventas-pietra.csv","\uFEFF"+rows.map(function(r){return r.map(function(x){return '"'+String(x).replace(/"/g,'""')+'"';}).join(";");}).join("\n"),"text/csv;charset=utf-8");}
 function bajarBackup(){bajar("copia-ferias-pietra-"+today()+".json",JSON.stringify(S),"application/json");}
-function restaurar(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);if(!o.sales)throw 0;if(!confirm("Esto reemplaza los datos de la nube (en todos tus dispositivos) por los de la copia. ¿Seguir?"))return;S.fairs=o.fairs||[];S.sales=o.sales;if(o.printed)S.printed=o.printed;if(o.cardCats)S.cardCats=o.cardCats;if(o.fair)S.fair=o.fair;save();rerender();toast("Copia restaurada",true);}catch(e){alert("El archivo no es una copia válida.");}inp.value="";};r.readAsText(f);}
+function restaurar(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);if(!o.sales)throw 0;if(!confirm("Esto reemplaza los datos de la nube (en todos tus dispositivos) por los de la copia. ¿Seguir?"))return;S.fairs=o.fairs||[];S.sales=o.sales;if(o.printed)S.printed=o.printed;if(o.cardCats)S.cardCats=o.cardCats;if(o.costs)S.costs=o.costs;if(o.fair)S.fair=o.fair;save();rerender();toast("Copia restaurada",true);}catch(e){alert("El archivo no es una copia válida.");}inp.value="";};r.readAsText(f);}
 function borrarTodo(){if(confirm("¿Borrar TODAS las ventas y ferias de la nube? Se borran en todos tus dispositivos.")&&confirm("Última confirmación: no se puede deshacer.")){S.fairs=[];S.sales=[];S.printed={};S.fair=null;save();toast("Datos borrados",true);rerender();}}
+var COMPS=[["cadena","Cadena"],["drop","Drop"],["perno","Perno"],["cinta","Cinta"],["sobre","Sobre + cierre"],["carton","Cartón"]],cCat=0;
+function cfgObj(){var st=[];for(var k in S.costs.stone)st.push({k:k,c:S.costs.stone[k]});return {printed:S.printed||{},cardCats:S.cardCats||{},fix:S.costs.fix,rec:S.costs.rec,stone:st};}
+function num(x){var v=parseFloat(String(x).replace(",","."));return v>=0?v:null;}
+function recOf(c){return S.costs.rec[c]||(c==="Cadenas con dijes"?["cadena","drop","perno","cinta","sobre"]:c==="Dijes"?["perno","sobre"]:["sobre"]);}
+function costFixOf(c){var t=0;recOf(c).forEach(function(m){t+=S.costs.fix[m]||0;});if(S.cardCats[c])t+=S.costs.fix.carton||0;return t;}
+function costoItem(it){var st=S.costs.stone[it.k];return st==null?null:st+costFixOf(it.c);}
+function costoVenta(x){return x.cost!=null?x.cost:costoItem({k:x.k,c:x.c});}
+function setFix(k,v){S.costs.fix[k]=num(v)||0;save();}
+function setStone(i,v){var n=num(v);if(n==null)delete S.costs.stone[ITEMS[i].k];else S.costs.stone[ITEMS[i].k]=n;save();}
+function setRec(ci,m,on){var c=CATS[ci];if(m==="carton"){S.cardCats[c]=on;}else{var a=recOf(c).filter(function(z){return z!==m;});if(on)a.push(m);S.costs.rec[c]=a;}save();}
+function mismoCosto(){var c=CATS[cCat],n=num(prompt("Costo de la piedra para TODAS las piezas de "+lab(c)+" ($)"));if(n==null)return;ITEMS.forEach(function(x){if(x.c===c)S.costs.stone[x.k]=n;});save();costos();}
+function kilo(i){var p=num(prompt("Precio del kilo ($)")),n=num(prompt("¿Cuántas piezas salieron en el kilo?"));if(p>0&&n>0){setStone(i,Math.round(p/n));costos();}}
+function gastos(id){var f=fairObj(id);if(!f)return;var g=f.g||{},a=prompt("Combustible de "+f.name+" ($)",g.comb||0);if(a===null)return;var b=prompt("Otros gastos (puesto, comida, peaje…) ($)",g.otros||0);if(b===null)return;f.g={comb:num(a)||0,otros:num(b)||0};save();datos();}
+function costos(){
+  var h='<div class="card"><h3>Costos fijos (por pieza)</h3><p class="muted">Lo que gastás en cada unidad. El combustible y otros gastos se cargan por feria en Datos &gt; Gastos.</p>';
+  COMPS.forEach(function(m){h+='<div class="row"><span>'+m[1]+'</span><input type="number" inputmode="decimal" style="width:110px;margin:0" value="'+(S.costs.fix[m[0]]||"")+'" placeholder="$" onchange="setFix(\''+m[0]+'\',this.value)"></div>';});
+  h+='</div><div class="card"><h3>Qué lleva cada tipo de pieza</h3>';
+  CATS.forEach(function(c,ci){h+='<div style="margin-bottom:10px"><b>'+esc(lab(c))+'</b><div style="display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:4px">'+COMPS.map(function(m){var on=m[0]==="carton"?!!S.cardCats[c]:recOf(c).indexOf(m[0])>-1;return '<label class="muted"><input type="checkbox" '+(on?"checked":"")+' onchange="setRec('+ci+',\''+m[0]+'\',this.checked)"> '+m[1]+'</label>';}).join("")+'</div></div>';});
+  h+='</div><div class="card"><h3>Costo de cada piedra</h3><p class="muted">Lo que te cuesta cada pieza. El botón ⚖ lo calcula desde el precio del kilo.</p><div class="chips">'+CATS.map(function(c,ci){return '<button class="chip'+(ci===cCat?" on":"")+'" onclick="cCat='+ci+';costos()">'+esc(lab(c))+'</button>';}).join("")+'</div><div style="margin-bottom:10px"><button class="btn" onclick="mismoCosto()">Mismo costo para todas las de esta categoría</button></div>';
+  ITEMS.forEach(function(x,i){if(x.c!==CATS[cCat])return;var v=S.costs.stone[x.k];h+='<div class="row"><span>'+esc(x.n)+'<br><span class="muted">'+esc(x.s)+'</span></span><span style="display:flex;gap:6px;align-items:center"><input type="number" inputmode="decimal" style="width:90px;margin:0" value="'+(v==null?"":v)+'" placeholder="$" onchange="setStone('+i+',this.value)"><button class="btn" style="padding:6px 9px" onclick="kilo('+i+')">⚖</button></span></div>';});
+  document.getElementById("costosBody").innerHTML=h+'</div>';}
 load();iniciar();
 </script>
 </body>

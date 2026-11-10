@@ -78,7 +78,8 @@ nav button.on{color:var(--accent);font-weight:700}
   </section>
   <!-- RESUMEN -->
   <section id="v-resumen" class="hide">
-    <input type="date" id="rdate" onchange="resumen()">
+    <div class="chips"><button class="chip" onclick="setRango('hoy')">Hoy</button><button class="chip" onclick="setRango('7')">Últimos 7 días</button><button class="chip" onclick="setRango('mes')">Este mes</button><button class="chip" onclick="setRango('todo')">Todo</button></div>
+    <div style="display:flex;gap:10px"><div style="flex:1"><small class="muted">Desde</small><input type="date" id="rdate" onchange="resumen()"></div><div style="flex:1"><small class="muted">Hasta</small><input type="date" id="rdate2" onchange="resumen()"></div></div>
     <select id="rfair" onchange="resumen()"></select>
     <div id="rbody"></div>
   </section>
@@ -241,7 +242,7 @@ function newFair(first){
   S.fair=f.id;save();document.getElementById("fairName").textContent=f.name;draw();
 }
 function tab(t){["vender","resumen","cartones","datos"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("hide",x!==t);document.getElementById("n-"+x).classList.toggle("on",x===t);});
-  if(t==="resumen"){var d=document.getElementById("rdate");if(!d.value)d.value=today();fillFairSel();resumen();}
+  if(t==="resumen"){var d=document.getElementById("rdate"),d2=document.getElementById("rdate2");if(!d.value)d.value=today();if(!d2.value)d2.value=d.value;fillFairSel();resumen();}
   if(t==="cartones")cartones();if(t==="datos")datos();window.scrollTo(0,0);}
 function cardOf(it){if(!S.cardCats[it.c])return "";return it.c==="Aros"?"Aros (cartón general)":it.n;}
 function sell(it,price){var s={id:"s"+Date.now()+Math.random().toString(36).slice(2,5),t:Date.now(),fair:S.fair,k:it.k,n:it.n,c:it.c,s:it.s,price:price,pay:S.pay,card:cardOf(it)};
@@ -262,27 +263,38 @@ function draw(){ensureFair();
   var list=ITEMS.filter(function(x){if(q)return norm(x.n+" "+x.s+" "+lab(x.c)).indexOf(q)>-1;return x.c===cat&&(size==="Todos"||x.s===size);});
   document.getElementById("grid").innerHTML=list.length?list.map(function(x){var i=ITEMS.indexOf(x);return '<button class="tile" onclick="venderItem('+i+')"><span class="sw" style="background:linear-gradient(135deg,'+x.g0+','+x.g1+')"></span><span class="tx"><b>'+esc(x.n)+'</b><small>'+esc(q?lab(x.c)+" · "+x.s:x.s)+'</small><span class="pr">'+(x.p?money(x.p):"Precio a definir")+'</span></span>'+(cnt[x.k]?'<span class="bd">'+cnt[x.k]+'</span>':'')+'</button>';}).join(""):'<p class="muted">No hay piezas con ese filtro.</p>';
 }
-function fillFairSel(){var d=document.getElementById("rdate").value,sel=document.getElementById("rfair"),cur=sel.value;var ids={};S.sales.forEach(function(s){if(dayOf(s.t)===d)ids[s.fair]=1;});
-  var h='<option value="">Todas las ferias del día</option>';Object.keys(ids).forEach(function(id){var f=fairObj(id);h+='<option value="'+id+'">'+esc(f?f.name:"(sin nombre)")+'</option>';});sel.innerHTML=h;if(cur&&ids[cur])sel.value=cur;}
+function fillFairSel(){var sel=document.getElementById("rfair"),cur=sel.value;var ids={};S.sales.forEach(function(s){if(inRange(s))ids[s.fair]=1;});
+  var h='<option value="">Todas las ferias</option>';Object.keys(ids).forEach(function(id){var f=fairObj(id);h+='<option value="'+id+'">'+esc(f?f.name:"(sin nombre)")+'</option>';});sel.innerHTML=h;if(cur&&ids[cur])sel.value=cur;}
 function groupBy(arr,fn){var o={};arr.forEach(function(x){var k=fn(x);(o[k]=o[k]||[]).push(x);});return o;}
 function sumBy(o){return Object.keys(o).map(function(k){return {k:k,n:o[k].length,t:o[k].reduce(function(a,b){return a+b.price;},0)};}).sort(function(a,b){return b.t-a.t;});}
-function daySales(){var d=document.getElementById("rdate").value,f=document.getElementById("rfair").value;return S.sales.filter(function(s){return dayOf(s.t)===d&&(!f||s.fair===f);});}
+function rango(){var a=document.getElementById("rdate").value,b=document.getElementById("rdate2").value;if(!a)a=b||today();if(!b)b=a;if(a>b){var x=a;a=b;b=x;}return [a,b];}
+function inRange(s){var r=rango(),d=dayOf(s.t);return d>=r[0]&&d<=r[1];}
+function fmtD(s){var p=s.split("-");return p[2]+"/"+p[1]+"/"+p[0];}
+function rangoTxt(){var r=rango();return r[0]===r[1]?fmtD(r[0]):fmtD(r[0])+" al "+fmtD(r[1]);}
+function setRango(tipo){var a=today(),b=today();if(tipo==="7")a=dayOf(Date.now()-6*864e5);else if(tipo==="mes")a=a.slice(0,8)+"01";else if(tipo==="todo"){a=dayOf(S.sales.reduce(function(p,x){return Math.min(p,x.t);},Date.now()));}document.getElementById("rdate").value=a;document.getElementById("rdate2").value=b;resumen();}
+function daySales(){var f=document.getElementById("rfair").value;return S.sales.filter(function(s){return inRange(s)&&(!f||s.fair===f);});}
 function resumen(){fillFairSel();var v=daySales(),tot=v.reduce(function(a,b){return a+b.price;},0),h="";
-  if(!v.length){document.getElementById("rbody").innerHTML='<p class="muted">No hay ventas ese día.</p>';return;}
+  if(!v.length){document.getElementById("rbody").innerHTML='<p class="muted">No hay ventas en esas fechas.</p>';return;}
   h+='<div class="kpis"><div class="kpi"><b>'+money(tot)+'</b><span>Total vendido</span></div><div class="kpi"><b>'+v.length+'</b><span>Piezas</span></div><div class="kpi"><b>'+money(tot/v.length)+'</b><span>Promedio</span></div></div>';
+  var dg=groupBy(v,function(s){return dayOf(s.t);}),dk=Object.keys(dg).sort();
+  if(dk.length>1)h+='<div class="card"><h3>Por día</h3>'+dk.map(function(k){var a=dg[k];return '<div class="row"><span>'+fmtD(k)+' · '+a.length+'</span><span class="r">'+money(a.reduce(function(x,y){return x+y.price;},0))+'</span></div>';}).join("")+'</div>';
+  var fg=groupBy(v,function(s){var f=fairObj(s.fair);return f?f.name:"(sin nombre)";});
+  if(Object.keys(fg).length>1)h+='<div class="card"><h3>Por feria</h3>'+sumBy(fg).map(function(r){return '<div class="row"><span>'+esc(r.k)+' · '+r.n+'</span><span class="r">'+money(r.t)+'</span></div>';}).join("")+'</div>';
   h+='<div class="card"><h3>Por medio de pago</h3>'+sumBy(groupBy(v,function(s){return s.pay;})).map(function(r){return '<div class="row"><span>'+esc(r.k)+' · '+r.n+'</span><span class="r">'+money(r.t)+'</span></div>';}).join("")+'</div>';
   h+='<div class="card"><h3>Por tipo de pieza</h3>'+sumBy(groupBy(v,function(s){return lab(s.c);})).map(function(r){return '<div class="row"><span>'+esc(r.k)+' · '+r.n+'</span><span class="r">'+money(r.t)+'</span></div>';}).join("")+'</div>';
   h+='<div class="card"><h3>Lo que se vendió</h3>'+sumBy(groupBy(v,function(s){return s.n+(s.s?" · "+s.s:"");})).map(function(r){return '<div class="row"><span>'+esc(r.k)+'</span><span class="r">×'+r.n+' · '+money(r.t)+'</span></div>';}).join("")+'</div>';
   var cg=groupBy(v.filter(function(s){return s.card;}),function(s){return s.card;});
-  h+='<div class="card"><h3>Cartones usados ese día</h3>'+(Object.keys(cg).length?Object.keys(cg).sort(function(a,b){return cg[b].length-cg[a].length;}).map(function(k){return '<div class="row"><span>'+esc(k)+'</span><span class="r">×'+cg[k].length+'</span></div>';}).join(""):'<p class="muted">Ninguno.</p>')+'</div>';
+  h+='<div class="card"><h3>Cartones usados</h3>'+(Object.keys(cg).length?Object.keys(cg).sort(function(a,b){return cg[b].length-cg[a].length;}).map(function(k){return '<div class="row"><span>'+esc(k)+'</span><span class="r">×'+cg[k].length+'</span></div>';}).join(""):'<p class="muted">Ninguno.</p>')+'</div>';
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button class="btn pri" onclick="copiarResumen()">Copiar resumen</button></div>';
-  h+='<div class="card"><h3>Ventas del día</h3>'+v.slice().sort(function(a,b){return b.t-a.t;}).map(function(s){var d=new Date(s.t);return '<div class="line"><span class="t">'+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)+' · '+esc(s.n)+(s.s?" · "+esc(s.s):"")+' · '+esc(s.pay)+'<br><b>'+money(s.price)+'</b></span><button onclick="editPrecio(\''+s.id+'\')">Precio</button><button class="bad" onclick="borrarVenta(\''+s.id+'\')">Borrar</button></div>';}).join("")+'</div>';
+  h+='<div class="card"><h3>Ventas</h3>'+v.slice().sort(function(a,b){return b.t-a.t;}).map(function(s){var d=new Date(s.t);return '<div class="line"><span class="t">'+(dk.length>1?dayOf(s.t).slice(8)+"/"+dayOf(s.t).slice(5,7)+" · ":"")+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)+' · '+esc(s.n)+(s.s?" · "+esc(s.s):"")+' · '+esc(s.pay)+'<br><b>'+money(s.price)+'</b></span><button onclick="editPrecio(\''+s.id+'\')">Precio</button><button class="bad" onclick="borrarVenta(\''+s.id+'\')">Borrar</button></div>';}).join("")+'</div>';
   document.getElementById("rbody").innerHTML=h;}
 function editPrecio(id){var s=S.sales.filter(function(x){return x.id===id;})[0];if(!s)return;var p=parseFloat(String(prompt("Precio cobrado",s.price)||"").replace(",","."));if(p>=0){s.price=p;save();resumen();}}
 function borrarVenta(id){if(!confirm("¿Borrar esta venta?"))return;S.sales=S.sales.filter(function(x){return x.id!==id;});save();resumen();}
-function textoResumen(){var v=daySales(),d=document.getElementById("rdate").value,tot=v.reduce(function(a,b){return a+b.price;},0);
+function textoResumen(){var v=daySales(),tot=v.reduce(function(a,b){return a+b.price;},0);
   var f=document.getElementById("rfair").value,fn=f?(fairObj(f)||{}).name:"todas las ferias";
-  var t="Resumen "+d+" · "+fn+"\nTotal: "+money(tot)+" ("+v.length+" piezas)\n\nMedios de pago:\n"+sumBy(groupBy(v,function(s){return s.pay;})).map(function(r){return "- "+r.k+": "+money(r.t)+" ("+r.n+")";}).join("\n");
+  var t="Resumen "+rangoTxt()+" · "+fn+"\nTotal: "+money(tot)+" ("+v.length+" piezas)\n\nMedios de pago:\n"+sumBy(groupBy(v,function(s){return s.pay;})).map(function(r){return "- "+r.k+": "+money(r.t)+" ("+r.n+")";}).join("\n");
+  var dg=groupBy(v,function(s){return dayOf(s.t);}),dk=Object.keys(dg).sort();
+  if(dk.length>1)t+="\n\nPor día:\n"+dk.map(function(k){var a=dg[k];return "- "+fmtD(k)+": "+money(a.reduce(function(x,y){return x+y.price;},0))+" ("+a.length+")";}).join("\n");
   t+="\n\nVendido:\n"+sumBy(groupBy(v,function(s){return s.n+(s.s?" "+s.s:"");})).map(function(r){return "- "+r.k+" x"+r.n;}).join("\n");
   var cg=groupBy(v.filter(function(s){return s.card;}),function(s){return s.card;});
   t+="\n\nCartones usados:\n"+(Object.keys(cg).length?Object.keys(cg).map(function(k){return "- "+k+" x"+cg[k].length;}).join("\n"):"ninguno");return t;}

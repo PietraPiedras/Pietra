@@ -181,8 +181,8 @@ footer{border-top:1px solid var(--line);padding:20px 16px;text-align:center;colo
 <script>
 var WHATSAPP = "5491160533175";
 var SIZES = ["Todos","Cordón","Perla","Pequeña","Mediana","Grande","Facetada / Especial"];
-var CATLABEL={"Dijes":"Cadenas con Piedra","Luna":"Cadena de Luna con Piedra","Constelaciones":"Constelaciones (acrílico)","Abrazo infinito":"Abrazo infinito (cobre bañado en plata)"};
-var CATS = ["Dijes","Luna","Pulseras","Anillos","Aros","Cadenas con dijes","Constelaciones","Abrazo infinito","Piedras"];
+var CATLABEL={"Dijes":"Cadenas con Piedra","Luna":"Cadena de Luna con Piedra","Constelaciones":"Constelaciones (acrílico)","Abrazo infinito":"Abrazo infinito (cobre bañado en plata)","Cadenitas":"Argentina y Malvinas"};
+var CATS = ["Dijes","Luna","Pulseras","Anillos","Aros","Cadenas con dijes","Constelaciones","Abrazo infinito","Piedras","Cadenitas"];
 var MATS = ["Todos","Acero","Fundición"];
 // Productos de ejemplo: reemplazar por los tuyos
 var IMG_LAPIS=null;
@@ -212,6 +212,7 @@ LUNA.forEach(function(a){var c=a[1];if(!c){STONES.forEach(function(s){if(s[0]===
 var ABR=["Todos","Pequeño 3 cm","Grande 4,7 cm"];
 ["Aries","Tauro","Géminis","Cáncer","Leo","Virgo","Libra","Escorpio","Sagitario","Capricornio","Acuario","Piscis"].forEach(function(sg){P.push({n:sg,k:"constelacion-"+slug(sg),c:"Constelaciones",s:"Acrílico",p:5000,g:["#6f7fc9","#14183a"]});});
 [["Plateado y plateado","#c4c8d0","#2c2e33"],["Plateado y negro","#9aa0a8","#0d0d0f"],["Plateado y dorado rosa","#d9a08f","#4a2a22"]].forEach(function(a){["Pequeño 3 cm","Grande 4,7 cm"].forEach(function(t){P.push({n:"Abrazo infinito · "+a[0],k:"abrazo-infinito-"+slug(a[0]),c:"Abrazo infinito",s:t,p:7000,g:[a[1],a[2]]});});});
+[["Cadenita Argentina plateada","cadenita-argentina-plateada","Plateada",["#c4c8d0","#2c2e33"]],["Cadenita Argentina dorada","cadenita-argentina-dorada","Dorada",["#d4ac52","#3a2c0c"]],["Cadenita Malvinas (islas)","cadenita-malvinas-islas","Islas",["#7fb2e5","#14263a"]],["Cadenita Malvinas (medalla)","cadenita-malvinas-medalla","Medalla",["#7fb2e5","#14263a"]]].forEach(function(a){P.push({n:a[0],k:a[1],c:"Cadenitas",s:a[2],p:15000,g:a[3]});});
 var AROS=[["Malaquita"],["Jaspe Rojo","#a8432c"],["Amatista"]];
 AROS.forEach(function(a){var c=a[1];if(!c){STONES.forEach(function(s){if(s[0]===a[0])c=s[1];});}P.push({n:a[0],c:"Aros",s:"Con perla",p:PRICE.Aros,g:[lift(c),shade(c)]});});
 function imgFallback(el,i){var x=P[i];if(x&&x.s==="Cordón"&&!el.dataset.f){el.dataset.f=1;el.src="fotos/cordon-referencia-1.jpg";}else{el.remove();}}
@@ -276,11 +277,11 @@ function draw(){
     document.getElementById("grid").innerHTML=tl;return;
   }
   var ch=document.getElementById("chips"); ch.innerHTML="";
-  (cat==="Piedras"||cat==="Luna"||cat==="Aros"||cat==="Pulseras"||cat==="Constelaciones"?[]:(cat==="Abrazo infinito"?ABR:(cat==="Cadenas con dijes"?MATS:(cat==="Anillos"?RINGS:SIZES)))).forEach(function(s){var b=document.createElement("button");b.className="chip"+(s===size?" on":"");b.textContent=s;
+  (cat==="Piedras"||cat==="Luna"||cat==="Aros"||cat==="Pulseras"||cat==="Constelaciones"||cat==="Cadenitas"?[]:(cat==="Abrazo infinito"?ABR:(cat==="Cadenas con dijes"?MATS:(cat==="Anillos"?RINGS:SIZES)))).forEach(function(s){var b=document.createElement("button");b.className="chip"+(s===size?" on":"");b.textContent=s;
     b.onclick=function(){size=s;draw();};ch.appendChild(b);});
   if(cat==="Dijes"){var bk=document.createElement("button");bk.className="chip";bk.textContent="← Tamaños";bk.onclick=function(){size="Menu";sign="";draw();};ch.insertBefore(bk,ch.firstChild);}
   var sg=document.getElementById("signs"); sg.innerHTML="";
-  if(cat!=="Cadenas con dijes"&&cat!=="Pulseras"&&cat!=="Constelaciones"&&cat!=="Abrazo infinito"){
+  if(cat!=="Cadenas con dijes"&&cat!=="Pulseras"&&cat!=="Constelaciones"&&cat!=="Abrazo infinito"&&cat!=="Cadenitas"){
     var all=document.createElement("button");all.className="chip"+(sign===""?" on":"");all.textContent="Cualquier signo";all.onclick=function(){sign="";draw();};sg.appendChild(all);
     SIGNOS.forEach(function(s){var b=document.createElement("button");b.className="chip"+(s[1]===sign?" on":"");b.textContent=s[0]+"\uFE0E "+s[1];b.onclick=function(){sign=(sign===s[1]?"":s[1]);draw();};sg.appendChild(b);});
   }
@@ -300,14 +301,14 @@ document.getElementById("wa").href=WAURL;document.getElementById("wa2").href=WAU
 
 var view="home",si=0,stimer=null;
 var SLIDES=[["agata-verde-1","Cadenas con Piedra","Dijes"],["luna-malaquita-1","Cadena de Luna con Piedra","Luna"],["anillo-estampado-aries-1","Anillos","Anillos"],["cadena-colibri-1","Cadenas con dijes","Cadenas con dijes"],["aros-amatista-1","Aros","Aros"],["diamantina-1","Cadenas con Piedra","Dijes"],["citrino-1","Cadenas con Piedra","Dijes"],["perla-ojo-de-tigre-1","Cadenas con Piedra","Dijes"]];
-var TILEIMG={"Dijes":"agata-verde-1","Luna":"luna-malaquita-1","Anillos":"anillo-estampado-aries-1","Aros":"aros-amatista-1","Cadenas con dijes":"cadena-colibri-1","Piedras":"suelta-fluorita-verde-1","Constelaciones":"constelacion-aries-1","Abrazo infinito":"abrazo-infinito-plateado-y-plateado-1"};
+var TILEIMG={"Dijes":"agata-verde-1","Luna":"luna-malaquita-1","Anillos":"anillo-estampado-aries-1","Aros":"aros-amatista-1","Cadenas con dijes":"cadena-colibri-1","Piedras":"suelta-fluorita-verde-1","Constelaciones":"constelacion-aries-1","Abrazo infinito":"abrazo-infinito-plateado-y-plateado-1","Cadenitas":"cadenita-argentina-plateada-1"};
 function slideSrc(k){var b=k.replace(/-1$/,"");return (IMGS[b]&&IMGS[b][0])||("fotos/"+k+".jpg");}
 function showSlide(i){var ss=document.querySelectorAll("#slides .slide"),dd=document.querySelectorAll("#dots .dot");si=i;
   for(var k=0;k<ss.length;k++){ss[k].className="slide"+(k===i?" on":"");if(dd[k])dd[k].className="dot"+(k===i?" on":"");}}
 function nextSlide(){var ss=document.querySelectorAll("#slides .slide");for(var t=1;t<=ss.length;t++){var j=(si+t)%ss.length;if(!ss[j].getAttribute("data-bad")){showSlide(j);return;}}}
 function buildHome(){
   var R1=[["agata-verde-1","Dijes"],["cadena-colibri-1","Cadenas con dijes"],["luna-malaquita-1","Luna"],["aros-amatista-1","Aros"],["diamantina-1","Dijes"],["anillo-estampado-aries-1","Anillos"],["perla-ojo-de-tigre-1","Dijes"],["citrino-1","Dijes"],["constelacion-aries-1","Constelaciones"]];
-  var R2=[["sodalita-1","Dijes"],["luna-opalina-1","Luna"],["cadena-mariposa-1","Cadenas con dijes"],["rosa-del-desierto-1","Dijes"],["anillo-lapislazuli-1","Anillos"],["amazonita-1","Dijes"],["aros-malaquita-1","Aros"],["labradorita-1","Dijes"],["unakita-1","Dijes"],["abrazo-infinito-plateado-y-dorado-rosa-1","Abrazo infinito"]];
+  var R2=[["sodalita-1","Dijes"],["luna-opalina-1","Luna"],["cadena-mariposa-1","Cadenas con dijes"],["rosa-del-desierto-1","Dijes"],["anillo-lapislazuli-1","Anillos"],["amazonita-1","Dijes"],["aros-malaquita-1","Aros"],["labradorita-1","Dijes"],["unakita-1","Dijes"],["cadenita-malvinas-islas-1","Cadenitas"],["abrazo-infinito-plateado-y-dorado-rosa-1","Abrazo infinito"]];
   function fill(id,rows,rev){var el=document.getElementById(id);el.className="mq"+(rev?" rev":"");
     var one=rows.map(function(r){return '<div class="mq-i" onclick="go(\'catalog\',null,\''+r[1]+'\')"><img alt="" loading="lazy" src="'+slideSrc(r[0])+'" onerror="this.parentNode.remove()"></div>';}).join("");
     el.innerHTML='<div class="mq-track">'+one+one+'</div>';}

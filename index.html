@@ -181,12 +181,12 @@ footer{border-top:1px solid var(--line);padding:20px 16px;text-align:center;colo
 <script>
 var WHATSAPP = "5491160533175";
 var SIZES = ["Todos","Cordón","Perla","Pequeña","Mediana","Grande","Facetada / Especial"];
-var CATLABEL={"Dijes":"Cadenas con Piedra","Luna":"Cadena de Luna con Piedra","Constelaciones":"Constelaciones (acrílico)","Abrazo infinito":"Abrazo infinito (cobre bañado en plata)","Cadenitas":"Argentina y Malvinas"};
+var CATLABEL={"Dijes":"Cadenas con Piedra","Luna":"Cadena de Luna con Piedra","Constelaciones":"Constelaciones","Abrazo infinito":"Abrazo infinito","Cadenitas":"Argentina y Malvinas"};
 var CATS = ["Dijes","Luna","Pulseras","Anillos","Aros","Cadenas con dijes","Constelaciones","Abrazo infinito","Piedras","Cadenitas"];
 var MATS = ["Todos","Acero","Fundición"];
 // Productos de ejemplo: reemplazar por los tuyos
 var IMG_LAPIS=null;
-var SIZECM = {"Acrílico":"Dije de acrílico de 1,8 cm con la constelación del signo. Incluye cadena","Pequeño 3 cm":"Dije de 3 cm · viene con cadena, una pareja por cadena","Grande 4,7 cm":"Dije de 4,7 cm · viene con cadena, una pareja por cadena","Con perla":"Aros de acero quirúrgico","Suelta":"Se vende por unidad","Cordón":"Medidas variables: cada pieza es distinta","Perla":"Perla de 8 mm","Pequeña":"Tamaño aprox. 1 a 2 cm","Mediana":"Tamaño aprox. 2 a 3 cm","Grande":"Tamaño aprox. 3 a 4 cm"};
+var SIZECM = {"Acrílico":"Dije de acrílico de 1,8 cm con la constelación del signo. Incluye cadena","Pequeño 3 cm":"Cobre bañado en plata · dije de 3 cm · viene con cadena, una pareja por cadena","Grande 4,7 cm":"Cobre bañado en plata · dije de 4,7 cm · viene con cadena, una pareja por cadena","Con perla":"Aros de acero quirúrgico","Suelta":"Se vende por unidad","Cordón":"Medidas variables: cada pieza es distinta","Perla":"Perla de 8 mm","Pequeña":"Tamaño aprox. 1 a 2 cm","Mediana":"Tamaño aprox. 2 a 3 cm","Grande":"Tamaño aprox. 3 a 4 cm"};
 var PRICE = {"Aros":10000,"Luna":15000,"Cordón":4000,"Perla":6000,"Pequeña":8000,"Mediana":10000,"Grande":12000}; // precios supuestos, ajustar
 var P = [
  {n:"Lapislázuli",c:"Dijes",s:"Grande",p:PRICE.Grande,g:["#2c4aa8","#101a45"],z:"Tauro, Libra, Sagitario y Acuario",img:IMG_LAPIS},
@@ -208,7 +208,7 @@ var SUELTAS=[["Turmalina Negra",15000,"Turmalina Negra",IMG_S[0]],["Cuarzo Crist
 SUELTAS.forEach(function(a){var c="#888888";STONES.forEach(function(s){if(s[0]===(a[2]||a[0]))c=s[1];});P.push({n:a[0],c:"Piedras",s:"Suelta",p:a[1],g:[lift(c),shade(c)],img:a[3],info:a[2]});});
 var LUNA=[["Fucsita"],["Lapislázuli"],["Rodocrosita"],["Turmalina Negra"],["Cuarzo Cherry"],["Opalina"],["Ónix Negro","#3a3a40"],["Malaquita"],["Pirita"]];
 LUNA.forEach(function(a){var c=a[1];if(!c){STONES.forEach(function(s){if(s[0]===a[0])c=s[1];});}P.push({n:a[0],c:"Luna",s:"Luna de acero",p:PRICE.Luna,g:[lift(c),shade(c)]});});
-["Virgen rezando con rosario","Colibrí","Margarita","Torre Eiffel","Serpiente","Herradura","Astronauta en la luna","Valija","Luna con estrella","Mariposa"].forEach(function(n){P.push({n:n,k:(n==="Virgen rezando con rosario"?"ovalo-con-cruz":null),c:"Cadenas con dijes",s:"Acero",p:7000,g:["#9a9aa4","#2a2a30"]});});
+["Virgen rezando con rosario","Colibrí","Margarita","Torre Eiffel","Serpiente","Herradura","Astronauta en la luna","Valija","Luna con estrella","Mariposa"].forEach(function(n){P.push({n:n,k:(n==="Virgen rezando con rosario"?"ovalo-con-cruz":null),c:"Cadenas con dijes",s:"Acero",p:(n==="Serpiente"||n==="Herradura"?7000:5000),g:["#9a9aa4","#2a2a30"]});});
 var ABR=["Todos","Pequeño 3 cm","Grande 4,7 cm"];
 ["Aries","Tauro","Géminis","Cáncer","Leo","Virgo","Libra","Escorpio","Sagitario","Capricornio","Acuario","Piscis"].forEach(function(sg){P.push({n:sg,k:"constelacion-"+slug(sg),c:"Constelaciones",s:"Acrílico",p:5000,g:["#6f7fc9","#14183a"]});});
 [["Plateado y plateado","#c4c8d0","#2c2e33"],["Plateado y negro","#9aa0a8","#0d0d0f"],["Plateado y dorado rosa","#d9a08f","#4a2a22"]].forEach(function(a){["Pequeño 3 cm","Grande 4,7 cm"].forEach(function(t){P.push({n:"Abrazo infinito · "+a[0],k:"abrazo-infinito-"+slug(a[0]),c:"Abrazo infinito",s:t,p:7000,g:[a[1],a[2]]});});});

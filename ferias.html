@@ -209,7 +209,7 @@ function iniciar(){
 function arrancar(){hideGate();updStatus();migrarViejos(false);draw();}
 function rerender(){
   var t=["vender","resumen","cartones","costos","datos"].filter(function(x){return !document.getElementById("v-"+x).classList.contains("hide");})[0]||"vender";
-  var fo=fairObj(S.fair);if(fo)document.getElementById("fairName").textContent=fo.name;
+  var fo=fairObj(S.fair);if(fo)document.getElementById("fairName").textContent=fairLabel(fo);
   if(t==="vender")draw();else if(t==="resumen")resumen();else if(t==="cartones")cartones();else if(t==="costos")costos();else datos();
 }
 /* Sube a la nube lo que había guardado en este celular con la versión anterior de la página */
@@ -234,15 +234,16 @@ function money(n){return "$"+Math.round(n).toLocaleString("es-AR");}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function lab(c){return LAB[c]||c;}
 function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+function fairLabel(f){if(!f)return "—";var p=f.date.split("-");return f.name+" · "+p[2]+"/"+p[1]+(f.date!==today()?" ⚠ no es de hoy":"");}
 function fairObj(id){for(var i=0;i<S.fairs.length;i++)if(S.fairs[i].id===id)return S.fairs[i];return null;}
-function ensureFair(){if(!S.fair||!fairObj(S.fair)){newFair(true);}document.getElementById("fairName").textContent=(fairObj(S.fair)||{name:"—"}).name;}
+function ensureFair(){if(!S.fair||!fairObj(S.fair)){newFair(true);}document.getElementById("fairName").textContent=fairLabel(fairObj(S.fair));}
 function newFair(first){
   var name=prompt(first?"Nombre de la feria de hoy (ej: Feria de San Telmo)":"Nombre de la feria (o escribí el de una ya cargada para volver a ella)",first?"":"");
   if(name===null||!name.trim()){if(first&&!S.fairs.length){name="Feria sin nombre";}else return;}
   name=name.trim();var f=null;
   for(var i=0;i<S.fairs.length;i++)if(norm(S.fairs[i].name)===norm(name)&&S.fairs[i].date===today())f=S.fairs[i];
   if(!f){f={id:"f"+Date.now(),name:name,date:today()};S.fairs.push(f);}
-  S.fair=f.id;save();document.getElementById("fairName").textContent=f.name;draw();
+  S.fair=f.id;save();document.getElementById("fairName").textContent=fairLabel(f);draw();
 }
 function tab(t){["vender","resumen","cartones","costos","datos"].forEach(function(x){document.getElementById("v-"+x).classList.toggle("hide",x!==t);document.getElementById("n-"+x).classList.toggle("on",x===t);});
   if(t==="resumen"){var d=document.getElementById("rdate"),d2=document.getElementById("rdate2");if(!d.value)d.value=today();if(!d2.value)d2.value=d.value;fillFairSel();resumen();}
@@ -268,7 +269,7 @@ function draw(){ensureFair();if(PAYS.indexOf(S.pay)<0)S.pay="Efectivo";
   document.getElementById("grid").innerHTML=list.length?list.map(function(x){var i=ITEMS.indexOf(x);return '<button class="tile" onclick="venderItem('+i+')"><span class="sw" style="background:linear-gradient(135deg,'+x.g0+','+x.g1+')"></span><span class="tx"><b>'+esc(x.n)+'</b><small>'+esc(q?lab(x.c)+" · "+x.s:x.s)+'</small><span class="pr">'+(x.p?money(x.p):"Precio a definir")+'</span></span>'+(cnt[x.k]?'<span class="bd">'+cnt[x.k]+'</span>':'')+'</button>';}).join(""):'<p class="muted">No hay piezas con ese filtro.</p>';
 }
 function fillFairSel(){var sel=document.getElementById("rfair"),cur=sel.value;var ids={};S.sales.forEach(function(s){if(inRange(s))ids[s.fair]=1;});
-  var h='<option value="">Todas las ferias</option>';Object.keys(ids).forEach(function(id){var f=fairObj(id);h+='<option value="'+id+'">'+esc(f?f.name:"(sin nombre)")+'</option>';});sel.innerHTML=h;if(cur&&ids[cur])sel.value=cur;}
+  var h='<option value="">Todas las ferias</option>';Object.keys(ids).forEach(function(id){var f=fairObj(id);h+='<option value="'+id+'">'+esc(f?f.name+" · "+fmtD(f.date):"(sin nombre)")+'</option>';});sel.innerHTML=h;if(cur&&ids[cur])sel.value=cur;}
 function groupBy(arr,fn){var o={};arr.forEach(function(x){var k=fn(x);(o[k]=o[k]||[]).push(x);});return o;}
 function sumBy(o){return Object.keys(o).map(function(k){return {k:k,n:o[k].length,t:o[k].reduce(function(a,b){return a+b.price;},0)};}).sort(function(a,b){return b.t-a.t;});}
 function rango(){var a=document.getElementById("rdate").value,b=document.getElementById("rdate2").value;if(!a)a=b||today();if(!b)b=a;if(a>b){var x=a;a=b;b=x;}return [a,b];}

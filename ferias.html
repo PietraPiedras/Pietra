@@ -4,11 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
+<script>try{var th=localStorage.getItem("pietra_ferias_theme");if(th)document.documentElement.setAttribute("data-theme",th);}catch(e){}</script>
 <title>Pietra · Ferias</title>
 <style>
 :root{--bg:#0b0b0c;--surface:#161618;--line:#2a2a2d;--text:#f4f4f2;--muted:#a0a0a6;--accent:#d9b36c;--ok:#4caf7a;--bad:#e5645a;color-scheme:dark}
+:root[data-theme="light"]{--bg:#f6f4ef;--surface:#fff;--line:#ddd8cc;--text:#1d1d1f;--muted:#6b6b72;--accent:#9a6b12;--ok:#2e8b57;--bad:#c0392b;color-scheme:light}
+:root[data-theme="light"] .btn.pri,:root[data-theme="light"] .pay .chip.on,:root[data-theme="light"] .tile .bd{color:#fff}
+:root[data-theme="light"] #toast{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.18)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4;padding-bottom:calc(52px + env(safe-area-inset-bottom,0px))}
 header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px}
 h1{font-size:1.05rem;margin:0}
 .fair{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:.9rem;color:var(--muted)}
@@ -42,10 +46,10 @@ input[type=search],input[type=text],input[type=date],input[type=number],select{w
 .row:last-child{border-bottom:0}
 .row .r{color:var(--muted);white-space:nowrap}
 .muted{color:var(--muted);font-size:.88rem}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav button{background:none;border:0;padding:12px 4px;color:var(--muted);font-size:.85rem}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bg);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{background:none;border:0;padding:9px 2px;color:var(--muted);font-size:.8rem}
 nav button.on{color:var(--accent);font-weight:700}
-#toast{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:9;background:#22262b;border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:none;align-items:center;justify-content:space-between;gap:10px}
+#toast{position:fixed;left:12px;right:12px;bottom:calc(60px + env(safe-area-inset-bottom,0px));z-index:9;background:#22262b;border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:none;align-items:center;justify-content:space-between;gap:10px}
 #toast.show{display:flex}
 .hide{display:none}
 .line{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:.9rem}
@@ -63,7 +67,7 @@ nav button.on{color:var(--accent);font-weight:700}
 <div id="gate" class="gate"><div class="card"><h3>Pietra · Control de ferias</h3><p class="muted" id="gmsg">Cargando…</p>
 <form id="gform" style="display:none" onsubmit="return login(event)"><input type="text" id="gmail" placeholder="Mail" autocomplete="username" inputmode="email" autocapitalize="off"><input type="password" id="gpass" placeholder="Contraseña" autocomplete="current-password"><button class="btn pri" type="submit" style="width:100%">Ingresar</button></form></div></div>
 <header>
-  <div style="display:flex;align-items:center;gap:8px"><h1>Pietra · Control de ferias</h1><span id="sync"></span></div>
+  <div style="display:flex;align-items:center;gap:8px"><h1>Pietra · Control de ferias</h1><span id="sync"></span><button class="btn" id="themeBtn" onclick="toggleTheme()" style="padding:3px 10px;font-size:.78rem"></button></div>
   <div class="fair"><span>Feria:</span><b id="fairName">—</b><button class="btn" style="padding:4px 10px;margin-left:auto" onclick="newFair()">Cambiar / nueva</button></div>
 </header>
 <main>
@@ -139,6 +143,8 @@ var LKEY="pietra_ferias_local_v2";
 var db=null,auth=null,unsubs=[],started=false,inflight=0,ready={f:false,v:false,c:false},synced={fairs:{},sales:{},cfg:""};
 function stable(o){if(o&&typeof o==="object"){if(Array.isArray(o))return "["+o.map(stable).join(",")+"]";return "{"+Object.keys(o).sort().map(function(k){return JSON.stringify(k)+":"+stable(o[k]);}).join(",")+"}";}return JSON.stringify(o);}
 function plain(o){return JSON.parse(JSON.stringify(o));}
+function toggleTheme(){var h=document.documentElement,n=h.getAttribute("data-theme")==="light"?"dark":"light";h.setAttribute("data-theme",n);try{localStorage.setItem("pietra_ferias_theme",n);}catch(e){}themeBtn();}
+function themeBtn(){document.getElementById("themeBtn").textContent=document.documentElement.getAttribute("data-theme")==="light"?"☾ Oscuro":"☀ Claro";}
 function setSync(t,c){var e=document.getElementById("sync");e.textContent=t;e.style.color=c||"";}
 function updStatus(){if(!db)return;if(!navigator.onLine)setSync("● Sin conexión · se guarda en este celu","var(--bad)");else if(inflight>0)setSync("↻ Subiendo…","var(--accent)");else setSync("☁ Sincronizado","var(--ok)");}
 /* Solo se guardan localmente (por dispositivo) la feria actual y el medio de pago elegido */
@@ -350,7 +356,7 @@ function costos(){
   h+='</div><div class="card"><h3>Costo de cada piedra</h3><p class="muted">Lo que te cuesta cada pieza. El botón ⚖ lo calcula desde el precio del kilo.</p><div class="chips">'+CATS.map(function(c,ci){return '<button class="chip'+(ci===cCat?" on":"")+'" onclick="cCat='+ci+';costos()">'+esc(lab(c))+'</button>';}).join("")+'</div><div style="margin-bottom:10px"><button class="btn" onclick="mismoCosto()">Mismo costo para todas las de esta categoría</button></div>';
   ITEMS.forEach(function(x,i){if(x.c!==CATS[cCat])return;var v=S.costs.stone[x.k];h+='<div class="row"><span>'+esc(x.n)+'<br><span class="muted">'+esc(x.s)+'</span></span><span style="display:flex;gap:6px;align-items:center"><input type="number" inputmode="decimal" style="width:90px;margin:0" value="'+(v==null?"":v)+'" placeholder="$" onchange="setStone('+i+',this.value)"><button class="btn" style="padding:6px 9px" onclick="kilo('+i+')">⚖</button></span></div>';});
   document.getElementById("costosBody").innerHTML=h+'</div>';}
-load();iniciar();
+load();themeBtn();iniciar();
 </script>
 </body>
 </html>
